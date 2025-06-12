@@ -1,7 +1,19 @@
+using DemoWebApp.Models;
+using DemoWebApp.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+// Configure Power BI settings
+builder.Services.Configure<PowerBIConfig>(builder.Configuration.GetSection("PowerBI"));
+
+// Register Power BI service
+builder.Services.AddScoped<PowerBIService>();
+
+// Add HTTP client
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

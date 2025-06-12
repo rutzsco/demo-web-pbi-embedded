@@ -1,0 +1,95 @@
+@page
+@model PowerBIModel
+@{
+    ViewData["Title"] = "Power BI Report";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Power BI Embedded Report</h1>
+            
+            @if (!string.IsNullOrEmpty(Model.EmbedConfig.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Error:</strong> @Model.EmbedConfig.ErrorMessage
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(Model.EmbedConfig.EmbedToken))
+            {
+                <div id="reportContainer" style="height: 600px; width: 100%; border: 1px solid #ccc;"></div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    Loading Power BI report...
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.EmbedConfig.EmbedToken))
+{
+    <script src="https://cdn.jsdelivr.net/npm/powerbi-client@2.22.1/dist/powerbi.min.js"></script>
+    <script>
+        window.onload = function () {
+            // Get models for Power BI
+            const models = window['powerbi-client'].models;
+
+            // Embed configuration
+            const config = {
+                type: 'report',
+                id: '@Model.EmbedConfig.ReportId',
+                embedUrl: '@Model.EmbedConfig.EmbedUrl',
+                accessToken: '@Model.EmbedConfig.EmbedToken',
+                tokenType: models.TokenType.Embed,
+                settings: {
+                    panes: {
+                        filters: {
+                            expanded: false,
+                            visible: true
+                        },
+                        pageNavigation: {
+                            visible: true
+                        }
+                    },
+                    background: models.BackgroundType.Transparent,
+                    layoutType: models.LayoutType.FixedSize
+                }
+            };
+
+            // Get a reference to the embedded report HTML element
+            const reportContainer = document.getElementById('reportContainer');
+
+            // Embed the report and display it within the div container
+            const report = powerbi.embed(reportContainer, config);
+
+            // Report.off removes a given event handler if it exists
+            report.off("loaded");
+
+            // Report.on will add an event handler which prints to Log window
+            report.on("loaded", function () {
+                console.log("Report loaded");
+            });
+
+            // Report.off removes a given event handler if it exists
+            report.off("error");
+
+            // Report.on will add an event handler which prints to Log window
+            report.on("error", function (event) {
+                console.error("Report error:", event.detail);
+            });
+        };
+    </script>
+}
+
+<style>
+    #reportContainer iframe {
+        width: 100% !important;
+        height: 100% !important;
+    }
+</style>
